@@ -1,0 +1,38 @@
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore the virtual environment
+venv/
+env/
+
+# Ignore Django's default SQLite database
+*.db
+
+# Ignore secret keys and sensitive data
+settings_secret.py
+*.env
+
+# Ignore log files
+*.log
+
+# Ignore migrations if using schema migration tools like South or Django Migrations
+*/migrations/
+
+# IDE-specific files to ignore
+.vscode/
+
+# macOS system files to ignore
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS folder metadata to ignore
+__MACOSX/
+
+# macOS-specific hidden files to ignore
+*.hidden
+*.hidden~
+
+# MacOS resource fork files to ignore
+*.resource
