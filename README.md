@@ -61,6 +61,12 @@ Overall, this system will provide a secure and efficient way to manage sensitive
 &nbsp;
 
 &nbsp;
+# Specific Design Pattern
+![Alt Text](design.png)
+
+&nbsp;
+
+&nbsp;
 # Tech Stack Selection
 ## Frontend
 There are many frontend frameworks and libraries available for building user interfaces, each with their own strengths and weaknesses. Here are some factors to consider when choosing a frontend framework for the sensitive personal document management system:
