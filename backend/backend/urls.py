@@ -22,5 +22,6 @@ urlpatterns = [
     path('',views.home),
     path('create_client/',views.create_client),
     path('create_driver_license/',views.create_driver_license),
-    path('driver_license_exist/',views.driver_license_exist),
+    path('document_exist/',views.document_exist),
+    path('client_exists/',views.client_exists),
 ]
