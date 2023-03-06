@@ -20,5 +20,7 @@ from app import views
 urlpatterns = [
     # path('admin/', admin.site.urls),
     path('',views.home),
-    path('orm/',views.orm),
+    path('create_client/',views.create_client),
+    path('create_driver_license/',views.create_driver_license),
+    path('driver_license_exist/',views.driver_license_exist),
 ]

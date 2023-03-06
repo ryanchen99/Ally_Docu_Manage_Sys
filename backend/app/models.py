@@ -8,7 +8,7 @@ class Clients(models.Model):
     email = models.CharField(max_length=100)
     phone = models.CharField(max_length=100)
     
-class Driver_License(models.Model):
+class Driver_Licenses(models.Model):
     dl_id = models.AutoField(primary_key=True)
     license_number = models.CharField(max_length=100)
     fname = models.CharField(max_length=100)
@@ -21,4 +21,3 @@ class Driver_License(models.Model):
     image_url = models.ImageField(upload_to='images/')
     client_id = models.ForeignKey(Clients, on_delete=models.CASCADE)
 
-Clients.objects.create(fname='Ruihan', lname='Chen',email='00@email.edu',phone='1234567890')
