@@ -1,23 +1,10 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse, HttpResponseBadRequest
+from django.views.decorators.csrf import csrf_exempt
 from django.middleware import csrf
 from app import models
 import json
 # Create your views here.
-def home(request):
-    if request.method == "GET":
-        # print(csrf.get_token(request))
-        return render(request, "home.html")
-    # 如果是POST请求，获取用户提交的数据
-    # print(request.POST)
-    username = request.POST.get("user")
-    password = request.POST.get("pwd")
-    if username == 'root' and password == "123":
-        # return HttpResponse("登录成功")
-        return redirect("http://www.google.com")
-
-    # return HttpResponse("登录失败")
-    return render(request, 'home.html', {"error_msg": "用户名或密码错误"})
 
 
 def create_client(request):
@@ -39,13 +26,15 @@ def client_exists(request):
 
 def create_driver_license(request):
     from app.utils.crud import create_driver_license
-    driver_license = create_driver_license('00001', 'Zixin', 'Li', 'CA', '2021-12-31', '2021-01-01', '2000-01-01', 'A', 'images/', 21)
+    driver_license = create_driver_license('00001', 'Zixin', 'Li', 'CA', '2021-12-31', '2021-01-01', '2000-01-01', 'A', 'images/', 1)
     print(driver_license)
     return HttpResponse("Driver license created")
 
+@csrf_exempt
 def document_exist(request):
     if request.method == 'GET':
         return HttpResponse("hi")
+    print("------------------",request.headers)
     from app.utils.crud import document_exist, client_exists
     from django.http import Http404
     try:
