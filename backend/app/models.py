@@ -21,3 +21,15 @@ class Driver_Licenses(models.Model):
     image_url = models.ImageField(upload_to='images/')
     client_id = models.ForeignKey(Clients, on_delete=models.CASCADE)
 
+class Divorce_Decrees(models.Model):
+    dd_id = models.AutoField(primary_key=True)
+    case_number = models.CharField(max_length=100)
+    fname = models.CharField(max_length=100)
+    lname = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    expired_date = models.DateField()
+    issued_date = models.DateField()
+    dob = models.DateField()
+    image_url = models.ImageField(upload_to='images/')
+    client_id = models.ForeignKey(Clients, on_delete=models.CASCADE)
+

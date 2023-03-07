@@ -4,7 +4,7 @@ import sys
 
 sys.path.append('../')
 # from app import models
-from app.models import Clients, Driver_Licenses
+from app.models import *
 from app import models
 
 DOCUMENT_TYPE_MAPPING = {
@@ -12,7 +12,7 @@ DOCUMENT_TYPE_MAPPING = {
     "Birth Certificate":1,
     "Copy of Death Certificate":2,
     "Death Notification Entry - Federal Government":3,
-    "Divorce Decree":4,
+    "Divorce Decree":Divorce_Decrees,
     "Driver's License":Driver_Licenses,
     "Executor Documents (For an estate, but not an IRA)":6,
     "Google Maps/USPS Address Search":7,
@@ -41,28 +41,22 @@ class Document_Type:
     TIMEOUT_SECONDS = 30
 
 
-def client_exists(*args, id=-1):
-    if id != -1:
-        clients = Clients.objects.filter(
-            client_id=id,
-        )
+def client_exists(fname, lname, email, phone):
+    clients = Clients.objects.filter(
+        fname=fname,
+        lname=lname,
+        email=email,
+        phone=phone,
+    )
+    # print(clients)
+    if clients:
+        return clients.first().client_id
     else:
-        if len(args) == 4:
-            fname, lname, email, phone = args
-            clients = Clients.objects.filter(
-                fname=fname,
-                lname=lname,
-                email=email,
-                phone=phone,
-            )
-        else:
-            raise ValueError("Either provide all four parameters or only the ID.")
-        # Return True if at least one matching client was found, False otherwise
-    return clients.exists()
+        return None
 
 
 def document_exist(client_id, document_type):
-    client = get_object_or_404(Clients, client_id=client_id)
+    # client = get_object_or_404(Clients, client_id=client_id)
     
     if document_type in DOCUMENT_TYPE_MAPPING:
         document_type = DOCUMENT_TYPE_MAPPING[document_type]
@@ -71,7 +65,7 @@ def document_exist(client_id, document_type):
         raise ValueError(f"Document type {document_type} does not exist")
     
     try:
-        document = document_type.objects.get(client_id=client.client_id)
+        document = document_type.objects.get(client_id=client_id)
     except document_type.DoesNotExist:
         document = None
 
