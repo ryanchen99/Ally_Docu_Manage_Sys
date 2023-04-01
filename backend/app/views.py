@@ -1,17 +1,68 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse, HttpResponseBadRequest
+from rest_framework.parsers import JSONParser
+from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from django.middleware import csrf
-from app import models
+from app.models import *
 import json
+
+from app.utils.crud import DOCUMENT_TYPE_MAPPING, get_client_documents,get_true_docu_attributes
 # Create your views here.
 
-
+@csrf_exempt
 def create_client(request):
-    from app.utils.crud import create_client
-    client = create_client('Zixin', 'Li',"9999@email.edu", "0020201")
-    print(client)
-    return HttpResponse("Client created")
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        id = data.get('id', None)
+        print(id)
+        if id is not None:
+            from app.utils.crud import create_client
+            client = create_client(id)
+            print(client)
+            return HttpResponse("Client created")
+        else:
+            return JsonResponse({'error': 'docu_type not provided'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+def client_documents(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        client_id = data.get('id', None)
+        print(client_id)
+        client_documents = get_true_docu_attributes(client_id)
+        if client_documents:
+            print(client_documents, type(client_documents))
+            data = {
+                "client_id": client_id,
+                "documents": client_documents
+            }
+            return JsonResponse(data, status=200)
+        else:
+            return JsonResponse({'error': 'Client not found'}, status=404)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+
+@csrf_exempt
+def driver_license_handler(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        docu_type = data.get('docu_type', None)
+        print(docu_type)
+        if docu_type is not None:
+            document = DOCUMENT_TYPE_MAPPING[docu_type].objects.all()
+            serialized_data = serializers.serialize('json', document)
+            print(document)
+            return JsonResponse(serialized_data, safe=False)
+        else:
+            return JsonResponse({'error': 'docu_type not provided'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 def client_exists(request):
     from app.utils.crud import client_exists
@@ -23,6 +74,27 @@ def client_exists(request):
         return HttpResponse("Client exist")
     return HttpResponse("Client does not exist")
 
+@csrf_exempt
+def file_upload(request):
+    if request.method == 'POST':
+        # Get the file from the request
+        uploaded_file = request.FILES.get('file')
+        print(uploaded_file, type(uploaded_file))
+
+        if uploaded_file is not None:
+            # Process the file (e.g., save it to disk, analyze it, etc.)
+            # This example just prints the file name and size
+            print(f'File name: {uploaded_file.name}, File size: {uploaded_file.size} bytes')
+
+            # Return a JSON response with some information
+            response_data = {'info': 'File uploaded successfully'}
+            return JsonResponse(response_data)
+        else:
+            response_data = {'error': 'No file was provided'}
+            return JsonResponse(response_data, status=400)
+    else:
+        response_data = {'error': 'Invalid request method'}
+        return JsonResponse(response_data, status=405)
 
 def create_driver_license(request):
     from app.utils.crud import create_driver_license

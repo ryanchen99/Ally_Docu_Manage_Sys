@@ -23,4 +23,7 @@ urlpatterns = [
     path('create_driver_license/',views.create_driver_license),
     path('document_exist/',views.document_exist),
     path('client_exists/',views.client_exists),
+    path('get_driver_licenses/',views.driver_license_handler),
+    path('client_documents/',views.client_documents),
+    path('file_upload/',views.file_upload),
 ]

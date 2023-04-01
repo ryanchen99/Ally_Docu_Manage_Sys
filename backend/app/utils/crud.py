@@ -1,5 +1,7 @@
 from django.db.models import Q, Count, Subquery
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
+
 import sys
 
 sys.path.append('../')
@@ -75,6 +77,32 @@ def document_exist(client_id, document_type):
     return False
 
 
+def get_true_docu_attributes(client_id):
+    try:
+        # Fetch the Docu_of_Clients instance for the given client_id
+        docu_of_client = Docu_of_Clients.objects.get(client_id=client_id)
+
+        # Iterate over the fields and store the field names with a value of True
+        true_attributes = []
+        for field in docu_of_client._meta.fields:
+            if field.name != 'client_id' and getattr(docu_of_client, field.name):
+                true_attributes.append(field.name)
+        # print(true_attributes)
+        return true_attributes
+
+    except ObjectDoesNotExist:
+        return None
+
+
+def get_client_documents(client_id):
+    from django.core.exceptions import ObjectDoesNotExist
+    try:
+        client_documents = Docu_of_Clients.objects.get(client_id=client_id)
+        return client_documents
+    except ObjectDoesNotExist:
+        return None
+    
+
 def create_driver_license(license_number, fname, lname, state, expired_date, issued_date, dob, license_class, image_url, client_id):
     try:
         client = Clients.objects.get(pk=client_id)
@@ -98,16 +126,11 @@ def create_driver_license(license_number, fname, lname, state, expired_date, iss
 
 
 
-def create_client(fname, lname, email, phone):
-    # Create a new client
-    client = Clients.objects.create(
-        fname=fname,
-        lname=lname,
-        email=email,
-        phone=phone,
-    )
-    
-    # Return the client object
-    return client
+def create_client(id):
+    # Create a new Docu_of_Clients instance with the new client's ID and save it
+    new_docu_of_client = Docu_of_Clients(client_id=id)
+    new_docu_of_client.save()
+
+    return new_docu_of_client
 
 
