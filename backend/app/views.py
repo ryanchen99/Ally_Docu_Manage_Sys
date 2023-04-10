@@ -57,11 +57,11 @@ def client_documents(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
         client_id = data.get('id', None)
-        print(client_id)
+        # print(client_id)
         client_documents = get_true_docu_attributes(client_id)
         # print(client_documents, type(client_documents))
         if client_documents is not None:
-            print(client_documents, type(client_documents))
+            # print(client_documents, type(client_documents))
             data = {
                 "documents": client_documents
             }
