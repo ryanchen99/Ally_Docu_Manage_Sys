@@ -99,10 +99,10 @@ DATABASES = {
 
 
 # AWS settings
-os.environ['AWS_ACCESS_KEY_ID'] = 'AKIAXHLDP67JDMIB6S44'
-os.environ['AWS_SECRET_ACCESS_KEY'] = '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'
-AWS_STORAGE_BUCKET_NAME = 'allyp1bucket'
-AWS_S3_REGION_NAME = 'us-east-1'
+os.environ['AWS_ACCESS_KEY_ID'] = settings_secret.AWS_ACCESS_KEY_ID
+os.environ['AWS_SECRET_ACCESS_KEY'] = settings_secret.AWS_SECRET_ACCESS_KEY
+AWS_STORAGE_BUCKET_NAME = settings_secret.AWS_STORAGE_BUCKET_NAME
+AWS_S3_REGION_NAME = settings_secret.AWS_S3_REGION_NAME
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
 AWS_S3_FILE_OVERWRITE = True
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
