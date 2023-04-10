@@ -1,15 +1,19 @@
 from django.shortcuts import render, HttpResponse, redirect
 from django.http import JsonResponse, HttpResponseBadRequest
+from django.conf import settings
 from rest_framework.parsers import JSONParser
 from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 from django.middleware import csrf
 from app.models import *
 import json
-
+import boto3
+from app.utils.ocr import parse_CA_DL
 from app.utils.crud import DOCUMENT_TYPE_MAPPING, get_client_documents,get_true_docu_attributes
 # Create your views here.
 
+
+# create client info for docu_of_client table, so that we can track which documents are uploaded for this client
 @csrf_exempt
 def create_client(request):
     if request.method == 'POST':
@@ -27,6 +31,7 @@ def create_client(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
+# check what documents exist for a client with the given client_id
 @csrf_exempt
 def client_documents(request):
     if request.method == 'POST':
@@ -34,10 +39,10 @@ def client_documents(request):
         client_id = data.get('id', None)
         print(client_id)
         client_documents = get_true_docu_attributes(client_id)
-        if client_documents:
+        # print(client_documents, type(client_documents))
+        if client_documents is not None:
             print(client_documents, type(client_documents))
             data = {
-                "client_id": client_id,
                 "documents": client_documents
             }
             return JsonResponse(data, status=200)
@@ -46,9 +51,9 @@ def client_documents(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
     
-
+# show all driver license in database
 @csrf_exempt
-def driver_license_handler(request):
+def show_all_dl(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
         docu_type = data.get('docu_type', None)
@@ -77,17 +82,42 @@ def client_exists(request):
 @csrf_exempt
 def file_upload(request):
     if request.method == 'POST':
-        # Get the file from the request
-        uploaded_file = request.FILES.get('file')
-        print(uploaded_file, type(uploaded_file))
+        # print(data)
+        # request_data = json.loads(request.body)
+        uploaded_file = request.FILES.get('file', None)
+        client_id = request.POST.get('user', None)
+
+        print("1111",uploaded_file, type(uploaded_file))
+        print("1111",client_id, type(client_id))
 
         if uploaded_file is not None:
             # Process the file (e.g., save it to disk, analyze it, etc.)
             # This example just prints the file name and size
-            print(f'File name: {uploaded_file.name}, File size: {uploaded_file.size} bytes')
+            # print(f'File name: {uploaded_file.name}, File size: {uploaded_file.size} bytes')
+            parsed_info = parse_CA_DL(uploaded_file.name, uploaded_file)
+            print(parsed_info)
+            # Upload the file to S3
+            s3 = boto3.client('s3')
+            bucket_name = getattr(settings, 'AWS_STORAGE_BUCKET_NAME', "")
+            print("bucket_name", bucket_name)
+            extension = uploaded_file.name.split(".")[-1]
+            print(client_id, "client_id", extension, "extension")
+            file_name = client_id+'_'+"driver_license."+extension
+            uploaded_file.name = file_name
+            print("uploaded_file.name", uploaded_file.name)
+            s3_key = f'documents/{uploaded_file.name}'
+            s3.upload_fileobj(uploaded_file, bucket_name, s3_key)
 
+            # Generate a presigned URL to access the file
+            url = s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': bucket_name, 'Key': s3_key},
+                ExpiresIn=3600  # URL expires in 1 hour
+            )
+            print(url)
             # Return a JSON response with some information
-            response_data = {'info': 'File uploaded successfully'}
+            response_data = {"info": parsed_info, "document_url": url}
+            # print(response_data)
             return JsonResponse(response_data)
         else:
             response_data = {'error': 'No file was provided'}
@@ -95,6 +125,66 @@ def file_upload(request):
     else:
         response_data = {'error': 'Invalid request method'}
         return JsonResponse(response_data, status=405)
+    
+@csrf_exempt
+def confirm_document(request):
+
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        client_id = data.get('client_id')
+        docu = data.get('docu')
+        url = data.get('document_url')
+        print(url, type(url), len(url))
+
+        # Check if the client exists
+        try:
+            client = Clients.objects.get(pk=client_id)
+        except Clients.DoesNotExist:
+            return JsonResponse({"error": "Client not found."}, status=404)
+        
+        from datetime import datetime
+        # Parse date fields
+        dob = datetime.strptime(docu.get('Date_of_Birth (MM/DD/YYYY)'), '%m/%d/%Y') if docu.get('Date_of_Birth (MM/DD/YYYY)') else None
+        issued_date = datetime.strptime(docu.get('Issue_Date (MM/DD/YYYY)'), '%m/%d/%Y') if docu.get('Issue_Date (MM/DD/YYYY)') else None
+        expired_date = datetime.strptime(docu.get('Expiration_Date (MM/DD/YYYY)'), '%m/%d/%Y') if docu.get('Expiration_Date (MM/DD/YYYY)') else None
+        print("---------------------------------------")
+
+        # Check if client_id exists in the DriverLicense table
+        existing_entries = Driver_Licenses.objects.filter(client_id=client_id)
+
+        # If there are existing entries, delete them
+        if existing_entries.exists():
+            existing_entries.delete()
+
+        # Create a new Driver_Licenses object
+        driver_license = Driver_Licenses(
+            license_number=docu.get('License_Number') or '',
+            fname=docu.get('First_Name') or '',
+            lname=docu.get('Last_Name') or '',
+            sex=docu.get('SEX') or '',
+            address=docu.get('Address') or '',
+            city=docu.get('City') or '',
+            state=docu.get('State') or '',
+            zip=docu.get('Zip') or '',
+            expired_date=expired_date,
+            issued_date=issued_date,
+            dob=dob,
+            image_url=url,
+            license_class=docu.get('Class') or '',
+            client_id=client,
+        )
+        # Save the object to the database
+        driver_license.save()
+        print("=======================================")
+
+        doc = Docu_of_Clients.objects.get(client_id=client_id)
+        doc.drivers_license = True
+        doc.save()
+        print("====================+++++++++++++++++===================")
+        return JsonResponse({"message": "Driver License created successfully."}, status=201)
+
+    return JsonResponse({"error": "Invalid request method."}, status=405)
+
 
 def create_driver_license(request):
     from app.utils.crud import create_driver_license

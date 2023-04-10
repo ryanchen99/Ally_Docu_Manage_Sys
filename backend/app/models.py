@@ -45,12 +45,16 @@ class Driver_Licenses(models.Model):
     license_number = models.CharField(max_length=100)
     fname = models.CharField(max_length=100)
     lname = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
+    sex = models.CharField(max_length=100, default='')
+    address = models.CharField(max_length=100, default='')
+    city = models.CharField(max_length=100, default='')
+    state = models.CharField(max_length=100, default='')
+    zip = models.CharField(max_length=100, default='')
     expired_date = models.DateField()
     issued_date = models.DateField()
     dob = models.DateField()
     license_class = models.CharField(max_length=100)
-    image_url = models.ImageField(upload_to='images/')
+    image_url = models.ImageField(max_length=300)
     client_id = models.ForeignKey(Clients, on_delete=models.CASCADE)
 
 class Divorce_Decrees(models.Model):

@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 from . import settings_secret
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,8 +21,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = settings_secret.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -40,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'app.apps.AppConfig',
     'corsheaders',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -97,6 +97,15 @@ DATABASES = {
     }
 }
 
+
+# AWS settings
+os.environ['AWS_ACCESS_KEY_ID'] = 'AKIAXHLDP67JDMIB6S44'
+os.environ['AWS_SECRET_ACCESS_KEY'] = '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'
+AWS_STORAGE_BUCKET_NAME = 'allyp1bucket'
+AWS_S3_REGION_NAME = 'us-east-1'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com'
+AWS_S3_FILE_OVERWRITE = True
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
