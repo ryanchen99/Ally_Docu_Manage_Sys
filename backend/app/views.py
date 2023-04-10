@@ -23,13 +23,33 @@ def create_client(request):
         if id is not None:
             from app.utils.crud import create_client
             client = create_client(id)
-            print(client)
-            return HttpResponse("Client created")
+            print(client, "Docu_of_Clients has been created")
+            return HttpResponse("Docu_of_Clients for this clients created")
         else:
             return JsonResponse({'error': 'docu_type not provided'}, status=400)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+
+@csrf_exempt
+def create_a_client(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        id = data.get('id', None)
+        fname = data.get('fname', None)
+        lname = data.get('lname', None)
+        email = data.get('email', None)
+        phone = data.get('phone', None)
+        print(id)
+        if id is not None:
+            from app.utils.crud import create_a_client
+            client = create_a_client(id, fname, lname, email, phone)
+            print(client, "Client has been created")
+            return HttpResponse("Client created")
+        else:
+            return JsonResponse({'error': 'docu_type not provided'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 # check what documents exist for a client with the given client_id
 @csrf_exempt
@@ -134,23 +154,17 @@ def confirm_document(request):
         client_id = data.get('client_id')
         docu = data.get('docu')
         url = data.get('document_url')
-        print(url, type(url), len(url))
+        # print(url, type(url), len(url))
 
-        # Check if the client exists
-        try:
-            client = Clients.objects.get(pk=client_id)
-        except Clients.DoesNotExist:
-            return JsonResponse({"error": "Client not found."}, status=404)
-        
         from datetime import datetime
         # Parse date fields
         dob = datetime.strptime(docu.get('Date_of_Birth (MM/DD/YYYY)'), '%m/%d/%Y') if docu.get('Date_of_Birth (MM/DD/YYYY)') else None
         issued_date = datetime.strptime(docu.get('Issue_Date (MM/DD/YYYY)'), '%m/%d/%Y') if docu.get('Issue_Date (MM/DD/YYYY)') else None
         expired_date = datetime.strptime(docu.get('Expiration_Date (MM/DD/YYYY)'), '%m/%d/%Y') if docu.get('Expiration_Date (MM/DD/YYYY)') else None
-        print("---------------------------------------")
 
         # Check if client_id exists in the DriverLicense table
         existing_entries = Driver_Licenses.objects.filter(client_id=client_id)
+        client = Clients.objects.get(client_id=client_id)
 
         # If there are existing entries, delete them
         if existing_entries.exists():
@@ -175,12 +189,12 @@ def confirm_document(request):
         )
         # Save the object to the database
         driver_license.save()
-        print("=======================================")
+        # print("=======================================")
 
         doc = Docu_of_Clients.objects.get(client_id=client_id)
         doc.drivers_license = True
         doc.save()
-        print("====================+++++++++++++++++===================")
+        # print("====================+++++++++++++++++===================")
         return JsonResponse({"message": "Driver License created successfully."}, status=201)
 
     return JsonResponse({"error": "Invalid request method."}, status=405)

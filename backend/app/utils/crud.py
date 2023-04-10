@@ -76,12 +76,21 @@ def document_exist(client_id, document_type):
     print(f"Document type {document_type} does not exist")
     return False
 
+def create_a_client(id,fname, lname, email, phone):
+    client = Clients(
+        client_id=id,
+        fname=fname,
+        lname=lname,
+        email=email,
+        phone=phone,
+    )
+    client.save()
+    return client
 
 def get_true_docu_attributes(client_id):
     try:
         # Fetch the Docu_of_Clients instance for the given client_id
         docu_of_client = Docu_of_Clients.objects.get(client_id=client_id)
-
         # Iterate over the fields and store the field names with a value of True
         true_attributes = []
         for field in docu_of_client._meta.fields:

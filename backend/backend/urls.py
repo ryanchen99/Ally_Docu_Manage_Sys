@@ -27,4 +27,5 @@ urlpatterns = [
     path('client_documents/',views.client_documents),
     path('file_upload/',views.file_upload),
     path('confirm_document/',views.confirm_document),
+    path('create_a_client/',views.create_a_client),
 ]
