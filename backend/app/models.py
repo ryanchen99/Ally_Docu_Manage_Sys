@@ -54,7 +54,7 @@ class Driver_Licenses(models.Model):
     issued_date = models.DateField()
     dob = models.DateField()
     license_class = models.CharField(max_length=100)
-    image_url = models.ImageField(max_length=300)
+    image_url = models.ImageField(max_length=2000)
     client_id = models.ForeignKey(Clients, on_delete=models.CASCADE)
 
 class Divorce_Decrees(models.Model):
