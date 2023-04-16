@@ -9,8 +9,6 @@ class Clients(models.Model):
     phone = models.CharField(max_length=100)
 
 
-from django.db import models
-
 class Docu_of_Clients(models.Model):
     client_id = models.AutoField(primary_key=True)
     armed_forces_id_card = models.BooleanField(default=False)

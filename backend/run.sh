@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export AWS_ACCESS_KEY_ID='AKIAXHLDP67JI5FK356I'
-export AWS_SECRET_ACCESS_KEY='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'
 export AWS_STORAGE_BUCKET_NAME='allyp1bucket'
 export AWS_S3_REGION_NAME='us-east-1'
 export DATABASE_ENGINE='django.db.backends.postgresql'
