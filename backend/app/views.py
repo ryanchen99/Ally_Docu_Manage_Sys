@@ -11,10 +11,11 @@ import boto3
 from app.utils.ocr import parse_CA_DL
 from app.utils.crud import DOCUMENT_TYPE_MAPPING, get_client_documents,get_true_docu_attributes
 # Create your views here.
-
+def homepage(request):
+    return HttpResponse("Hello World")
 
 # create client info for docu_of_client table, so that we can track which documents are uploaded for this client
-@csrf_exempt
+# @csrf_exempt
 def create_client(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
@@ -72,7 +73,7 @@ def client_documents(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
     
 # show all driver license in database
-@csrf_exempt
+# @csrf_exempt
 def show_all_dl(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
@@ -99,7 +100,7 @@ def client_exists(request):
         return HttpResponse("Client exist")
     return HttpResponse("Client does not exist")
 
-@csrf_exempt
+# @csrf_exempt
 def file_upload(request):
     if request.method == 'POST':
         # print(data)
@@ -138,7 +139,7 @@ def file_upload(request):
             # Return a JSON response with some information
             response_data = {"info": parsed_info, "document_url": url}
             # print(response_data)
-            return JsonResponse(response_data)
+            return JsonResponse(response_data, status=200)
         else:
             response_data = {'error': 'No file was provided'}
             return JsonResponse(response_data, status=400)

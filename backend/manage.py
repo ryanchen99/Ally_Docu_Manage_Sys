@@ -3,7 +3,8 @@
 import os
 import sys
 
-
+sys.path.append("/Users/ruihanchen/Desktop/Work Station/django-extensions")
+# import django_extensions
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
